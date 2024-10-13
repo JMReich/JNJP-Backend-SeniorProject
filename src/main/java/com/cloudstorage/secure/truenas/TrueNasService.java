@@ -20,7 +20,6 @@ public class TrueNasService {
 
 
         RestTemplate restTemplate = restTemplateBuilder
-
                 .build();
 
         // Make call to ping server and print it: https://10.0.0.202/api/v2.0/system/ping
@@ -38,13 +37,6 @@ public class TrueNasService {
         } catch (Exception e) {
             System.err.println("Error during ping request: " + e.getMessage());
         }
-
-
-
-
-
-
-
     }
 
     public String getApiKey(String username, String password) {
@@ -67,6 +59,7 @@ public class TrueNasService {
             if (Boolean.TRUE.equals(response)) {
 
                 // ToDo: Add 2FA check here
+                // Non-starter: After further reading, it seems that the 2FA is only for the root/admin account
 
 
                 // Check if the user already has an api key
