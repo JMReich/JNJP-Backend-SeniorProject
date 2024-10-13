@@ -13,17 +13,26 @@ public class TrueNasController {
     private TrueNasService trueNasService;
 
 
-
-    // Call to sign in the user
-    // Example: http://localhost:8080/ping?username=root&password=root
-    @GetMapping("/ping")
-    public void ping(@RequestParam String username, @RequestParam String password) {
-        trueNasService.ping(username, password);
+    // Call to get sessions
+    @GetMapping("/get/sessions")
+    public void getSessions() {
+        trueNasService.getAuthSessions();
     } // No return value
 
-    @GetMapping("/get/api_token")
+
+    // Call to sign in the user
+    // Example: http://localhost:8080/ping?token=fsddsfsdfds75f6das56f7sad5fd8saf5dsa86f56dsf568sadf586sdf8sad68f6865da
+    @GetMapping("/ping")
+    public void ping(@RequestParam String token) {
+        trueNasService.ping(token);
+    } // No return value
+
+
+
+    //http://localhost:8080/ping?username=root&password=root
+    @GetMapping("/auth")
     public String getApiToken(@RequestParam String username, @RequestParam String password) {
-        return trueNasService.getApiToken(username, password);
+        return trueNasService.getApiKey(username, password);
     } // Returns a string, Example: fsddsfsdfds75f6das56f7sad5fd8saf5dsa86f56dsf568sadf586sdf8sad68f6865da
 
 

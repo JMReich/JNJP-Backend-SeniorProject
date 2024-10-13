@@ -44,7 +44,7 @@ public class SecureCloudStorageApplication {
 		ClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
 		return builder
 				.requestFactory(() -> requestFactory)
-				.basicAuthentication("root", "root") // Temporary username and password for tetsting
+				//.basicAuthentication("root", "root") // Temporary username and password for tetsting
 				// Can be replacxed with: http://localhost:8080/ping?username=root&password=root
 				.build();
 
