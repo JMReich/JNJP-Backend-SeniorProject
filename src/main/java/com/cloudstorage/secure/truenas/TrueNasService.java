@@ -48,6 +48,7 @@ public class TrueNasService {
         // Make post call to check account: https://10.0.0.202/api/v2.0/auth/check_password
         String url = "https://10.0.0.202/api/v2.0/auth/check_password";
         String body = "{\"username\": \"" + username + "\", \"password\": \"" + password + "\"}";
+        System.out.println("username: " + username + " \npassword: " + password);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(org.springframework.http.MediaType.APPLICATION_JSON);
@@ -84,6 +85,7 @@ public class TrueNasService {
                 HttpEntity<String> entity2 = new HttpEntity<>(body, headers);
                 ResponseEntity<String> responseEntityTwo = restTemplate.postForEntity(url, entity2, String.class);
                 ApiKey apiKey = objectMapper.readValue(responseEntityTwo.getBody(), ApiKey.class);
+                System.out.println("Api key: " + apiKey.getKey());
                 return apiKey.getKey();
 
 
@@ -104,7 +106,7 @@ public class TrueNasService {
             return null;
         } catch (Exception e) {
             System.err.println("Error during api token request: " + e.getMessage());
-            return null;
+            return e.getMessage();
         }
 
 
@@ -129,6 +131,28 @@ public class TrueNasService {
             }
         } catch (Exception e) {
             System.err.println("Error during auth sessions request: " + e.getMessage());
+        }
+
+    }
+
+    public Boolean isAdmin(String username, String password) {
+
+        RestTemplate restTemplate = restTemplateBuilder
+                .basicAuthentication(username, password)
+                // This has to be the user's account
+                .build();
+
+        String url = "https://10.0.0.202/api/v2.0/auth/check_password";
+        String body = "{\"username\": \"" + username + "\", \"password\": \"" + password + "\"}";
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(org.springframework.http.MediaType.APPLICATION_JSON);
+
+        HttpEntity<String> entity = new HttpEntity<>(body, headers);
+
+        try {
+            return restTemplate.postForObject(url, entity, Boolean.class);
+        } catch (Exception e) {
+            return false;
         }
 
     }
