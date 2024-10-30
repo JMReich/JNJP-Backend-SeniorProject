@@ -97,4 +97,35 @@ public class TrueNasService {
             return false;
         }
     }
+
+    // Sets the volume size off a dataset
+    public boolean setVolSize(String nickname) {
+        //TODO: call this in the user creation
+
+        String body = "{" +
+                "\"Volsize:" + 5368709120 + "," +
+                "}";
+
+
+        return false;
+
+    }
+
+
+    // TODO: Call this in the setVolSize
+    public boolean createShare(String nickname) {
+        String path = "/mnt/jnpj/" + nickname;
+
+
+
+    }
+
+
+    public boolean changeNickname(int userid, String nickname, String oldNickname) {
+        // Update user
+
+
+        // Update path
+        String path = "/mnt/jnpj/" + oldNickname;
+    }
 }
