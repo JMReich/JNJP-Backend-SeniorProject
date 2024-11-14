@@ -75,7 +75,7 @@ app.post('/create-user', async (req, res) => {
       home_mode: '0700', // 0700 only user access*/
       shell: '/bin/sh',
       full_name: nickname,
-      password: refreshToken,
+      password: "1234",
       password_disabled: false,
       locked: false,
       microsoft_account: false,
@@ -339,8 +339,8 @@ app.post('/set-user-size', async (req, res) => {
 
 app.put('/set-password', async (req, res) => {
   const uid = req.body.uid;
-  const password = req.body.password;
-  
+  const password = "1234";
+  myConsole.log('Setting user password:', password);
   try {
     const users = await axios.get(`${envVariables.truenasApi}/user`, {
       headers: {
