@@ -277,6 +277,8 @@ app.post('/create-drive', async (req, res) => {
 
 // ACL DOES NOT NEED TO BE SET!!! STANDARD UNIX PERMS WORK!!!
 // NO SHARE NEEDS TO BE CREATED, THE BASE DIRECTORY IS THE SHARE
+
+//TODO: Fix this endpoint, not sure why its not working anymore
 app.post('/set-user-size', async (req, res) => {
   const uid = req.body.uid;
   const authUserId = req.body.authUserId;
@@ -375,6 +377,23 @@ app.put('/set-password', async (req, res) => {
   } catch (error) {
     myConsole.log('Error setting user password:', error);
     res.status(500).send(error);
+  }
+});
+
+app.get('/get-drive-info', async (req, res) => {
+  const drive = req.query.drive;
+  const datasetId = encodeURIComponent(`jnpj/${drive}`);
+  try {
+    const response = await axios.get(`${envVariables.truenasApi}/pool/dataset/id/${datasetId}`, {
+      headers: {
+        'Authorization': `Bearer ${envVariables.truenasApiKey}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    res.status(200).send(response.data);
+  } catch (error) {
+    myConsole.log('Error getting drive info:', error);
   }
 });
 
