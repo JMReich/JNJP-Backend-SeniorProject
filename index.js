@@ -76,11 +76,6 @@ app.post('/create-user', async (req, res) => {
     const nickname = req.body.nickname;
     const refreshToken = req.body.refreshToken;
     const authUserId = req.body.authUserId;
-
-    myConsole.log('Creating user:', userId, nickname, refreshToken);
-    myConsole.log(`Truenas link: ${envVariables.truenasApi}/user`);
-    myConsole.log(`Truenas API Key: ${envVariables.truenasApiKey}`);
-    
     
     const response = await axios.post(`${envVariables.truenasApi}/user`, {
       uid: userId,
@@ -103,10 +98,7 @@ app.post('/create-user', async (req, res) => {
         'Content-Type': 'application/json'
       }
     });
-    
-    
-
-    // chech result status, 200 is success
+   
     if (response.status !== 200) {
       myConsole.log('Error creating user:', result);
       res.status(500).send('Error creating user in TrueNAS');
@@ -164,10 +156,6 @@ app.post('/create-user', async (req, res) => {
 
     const managmentApiToken = managmentApiTokenRequest.data.access_token;
 
-    myConsole.log('Managment API Token:', managmentApiToken);
-
-
-
     const userResponse = await fetch(`https://jnpj-secure-cloud-storage.us.auth0.com/api/v2/users/${authUserId}`, {
       method: 'PATCH',
       headers: {
@@ -184,8 +172,12 @@ app.post('/create-user', async (req, res) => {
     
     const resultUser = await userResponse.json();
 
+    if (resultUser.statusCode !== 200) {
+      myConsole.log('Error creating user:', resultUser);
+      res.status(500).send('Error creating user in Auth0');
+      return;
+    }
 
-    myConsole.log('User resoponse: ', resultUser);
     res.status(200).json({ uid: userId});
   } catch (error) {
     myConsole.log('Error creating user:', error);
@@ -356,8 +348,8 @@ app.put('/set-password', async (req, res) => {
   const uid = req.body.uid;
   const password = "1234";
  
-  try {/*
-    const users = await axios.get(`${envVariables.truenasApi}/user`, {
+  try { 
+    const users = await axios.get(`${envVariables.truenasApi}/user`, { // This hets the users id, not the uid - makes sense ik
       headers: {
         'Authorization': `Bearer ${envVariables.truenasApiKey}`,
         'Content-Type': 'application/json'
@@ -370,9 +362,9 @@ app.put('/set-password', async (req, res) => {
         userId = user.id;
       }
     });
-    */
+    
 
-    const response = await axios.put(`${envVariables.truenasApi}/user/id/${uid}`, {
+    const response = await axios.put(`${envVariables.truenasApi}/user/id/${userId}`, {
       password: password
     }, {
       headers: {
