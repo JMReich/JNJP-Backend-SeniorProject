@@ -195,7 +195,6 @@ app.post('/create-user', async (req, res) => {
 });
 
 
-// TODO: Endpoint to add a directory/share in the user's home directory and to the users meta data
 app.post('/create-drive', async (req, res) => {
 
   const drive = req.body.drive;
@@ -291,8 +290,6 @@ app.post('/create-drive', async (req, res) => {
   }
 });
 
-// ACL DOES NOT NEED TO BE SET!!! STANDARD UNIX PERMS WORK!!!
-// NO SHARE NEEDS TO BE CREATED, THE BASE DIRECTORY IS THE SHARE
 
 //TODO: Fix this endpoint, not sure why its not working anymore
 app.post('/set-user-size', async (req, res) => {
@@ -358,8 +355,8 @@ app.post('/set-user-size', async (req, res) => {
 app.put('/set-password', async (req, res) => {
   const uid = req.body.uid;
   const password = "1234";
-  myConsole.log('Setting user password:', password);
-  try {
+ 
+  try {/*
     const users = await axios.get(`${envVariables.truenasApi}/user`, {
       headers: {
         'Authorization': `Bearer ${envVariables.truenasApiKey}`,
@@ -373,8 +370,9 @@ app.put('/set-password', async (req, res) => {
         userId = user.id;
       }
     });
+    */
 
-    const response = await axios.put(`${envVariables.truenasApi}/user/id/${userId}`, {
+    const response = await axios.put(`${envVariables.truenasApi}/user/id/${uid}`, {
       password: password
     }, {
       headers: {
