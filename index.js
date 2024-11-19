@@ -289,26 +289,29 @@ app.post('/set-user-size', async (req, res) => {
   const authUserId = req.body.authUserId;
   
   try {
-    const response = await axios.post(`${envVariables.truenasApi}/pool/dataset/id/jnpj/set_quota`, [
-      {
-        quota_type: "USER",
-        id: `${uid}`,
-        quota_value: 5000000000
-      }
-    ], {
+    const response = await fetch(`${envVariables.truenasApi}/pool/dataset/id/jnpj/set_quota`, {
+      method: 'POST',
       headers: {
         'Authorization': `Bearer ${envVariables.truenasApiKey}`,
         'Content-Type': 'application/json'
-      }
+      },
+      body: JSON.stringify([{
+        quota_type: "USER",
+        id: `${uid}`,
+        quota_value: 5000000000
+      }])
     });
+    
+    const data = await response.json();
 
-    if (response.status !== 200) {
-      myConsole.log('Error setting user vol size:', response.statusText);
-      res.status(500).send(response.statusText);
+    /* TODO: Not sure why this error handler is not working
+    if (data.statusCode !== 200) {
+      myConsole.log('Error setting user vol size:', data);
+      res.status(500).send(data);
       return;
-    }
+    } */
 
-    const managmentApiTokenRequest = await axios.post('https://jnpj-secure-cloud-storage.us.auth0.com/oauth/token', {
+      const managmentApiTokenRequest = await axios.post('https://jnpj-secure-cloud-storage.us.auth0.com/oauth/token', {
         client_id:"w51mJIxOTqy9lM9WJiDvHWWV2AbfIixW",client_secret:"oDWGPPFMRi06X_MIQavKVXfJFEhWchbMbuKuzMtkkA9qY9V0tepDjMbnR_abCfgv",audience:"https://jnpj-secure-cloud-storage.us.auth0.com/api/v2/",grant_type:"client_credentials",
       }, {
         headers: {
@@ -316,10 +319,12 @@ app.post('/set-user-size', async (req, res) => {
       }
     });
 
+    const managmentApiToken = managmentApiTokenRequest.data.access_token;
+
     const userResponse = await fetch(`https://jnpj-secure-cloud-storage.us.auth0.com/api/v2/users/${authUserId}`, {
       method: 'PATCH',
       headers: {
-        'Authorization': `Bearer ${managmentApiTokenRequest.data.access_token}`,
+        'Authorization': `Bearer ${managmentApiToken}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
@@ -330,6 +335,7 @@ app.post('/set-user-size', async (req, res) => {
     });
 
     var resultUser = await userResponse.json();
+    myConsole.log('Result:', resultUser);
 
     if (!resultUser) {
       myConsole.log('Error setting user vol size:', resultUser);
@@ -404,6 +410,8 @@ app.get('/get-drive-info', async (req, res) => {
 });
 
 
+
+// Old code to get groups from TrueNAS, might be useful later
 // function getGroups() {
 //   // Make request to TrueNAS to get groups with 
 
@@ -418,11 +426,7 @@ app.get('/get-drive-info', async (req, res) => {
 //   }).then(data => {
 //     myConsole.log('Groups:', data);``
 //   });
-
-
-
 // }
-
 // getGroups();
 
 
