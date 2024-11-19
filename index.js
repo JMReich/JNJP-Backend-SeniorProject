@@ -9,27 +9,43 @@ const app = express();
 app.use(express.json()); // To parse JSON request bodies
 
 // MySQL connection setup
+/*
 const dbConfig = {
   host: 'localhost',
   port: 3307,
   user: 'root',
   password: 'P@ssw0rd!', // Replace with your MySQL root password
   database: 'jnpj'
-};
+};*/
+
+// File version
+const fs = require('fs');
+let rawdata = fs.readFileSync('id.json');
+let idTracker = JSON.parse(rawdata);
+
+
+
 
 async function getCurrentUserId() {
+  return idTracker.current_user_id;
+  /*
   const connection = await mysql.createConnection(dbConfig);
   const [rows] = await connection.execute('SELECT current_user_id FROM user_id_tracker WHERE id = 1');
   await connection.end();
   return rows[0].current_user_id;
+  */
 }
 
 async function incrementUserId() {
+  idTracker.current_user_id += 1;
+  fs.writeFileSync('id.json', JSON.stringify(idTracker));
+  /*
   const connection = await mysql.createConnection(dbConfig);
   await connection.execute('UPDATE user_id_tracker SET current_user_id = current_user_id + 1 WHERE id = 1');
   const [rows] = await connection.execute('SELECT current_user_id FROM user_id_tracker WHERE id = 1');
   await connection.end();
   return rows[0].current_user_id;
+  */
 }
 
 app.get('/public', (req, res) => res.send('Everyone in the world can read this message.'));
@@ -50,7 +66,7 @@ app.use(jwt({
 var nodeConsole = require('console');
 var myConsole = new nodeConsole.Console(process.stdout, process.stderr);
 
-app.get('/private', (req, res) => res.status(200).send('Only authenticated users can read this message.'));
+
 
 app.post('/create-user', async (req, res) => {
   try {
@@ -396,6 +412,28 @@ app.get('/get-drive-info', async (req, res) => {
     myConsole.log('Error getting drive info:', error);
   }
 });
+
+
+// function getGroups() {
+//   // Make request to TrueNAS to get groups with 
+
+//   const response = fetch(`${envVariables.truenasApi}/group`, {
+//     method: 'GET',
+//     headers: {
+//       'Authorization': `Bearer ${envVariables.truenasApiKey}`,
+//       'Content-Type': 'application/json'
+//     }
+//   }).then (response => {
+//     return response.json();
+//   }).then(data => {
+//     myConsole.log('Groups:', data);``
+//   });
+
+
+
+// }
+
+// getGroups();
 
 
 app.listen(3000, () => console.log('Example app listening on port 3000!'));
