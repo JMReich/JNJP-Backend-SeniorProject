@@ -172,11 +172,12 @@ app.post('/create-user', async (req, res) => {
     
     const resultUser = await userResponse.json();
 
+    /*
     if (resultUser.statusCode !== 200) {
       myConsole.log('Error creating user:', resultUser);
       res.status(500).send('Error creating user in Auth0');
       return;
-    }
+    }*/
 
     res.status(200).json({ uid: userId});
   } catch (error) {
@@ -283,10 +284,13 @@ app.post('/create-drive', async (req, res) => {
 });
 
 
+
+
 //TODO: Fix this endpoint, not sure why its not working anymore
 app.post('/set-user-size', async (req, res) => {
   const uid = req.body.uid;
   const authUserId = req.body.authUserId;
+  
   
   try {
     const response = await fetch(`${envVariables.truenasApi}/pool/dataset/id/jnpj/set_quota`, {
@@ -302,7 +306,7 @@ app.post('/set-user-size', async (req, res) => {
       }])
     });
     
-    const data = await response.json();
+    //const data = await response.json();
 
     /* TODO: Not sure why this error handler is not working
     if (data.statusCode !== 200) {
@@ -392,8 +396,8 @@ app.put('/set-password', async (req, res) => {
   }
 });
 
-app.get('/get-drive-info', async (req, res) => {
-  const drive = req.query.drive;
+app.post('/get-drive-info', async (req, res) => {
+  const drive = req.body.drive;
   const datasetId = encodeURIComponent(`jnpj/${drive}`);
   try {
     const response = await axios.get(`${envVariables.truenasApi}/pool/dataset/id/${datasetId}`, {
@@ -408,6 +412,73 @@ app.get('/get-drive-info', async (req, res) => {
     myConsole.log('Error getting drive info:', error);
   }
 });
+
+app.post('/change-password', async (req, res) => {
+  // Change the user's password on Auth0
+  const userId = req.body.userId;
+  const newPassword = req.body.newPassword;
+
+  try {
+    const managmentApiTokenRequest = await axios.post('https://jnpj-secure-cloud-storage.us.auth0.com/oauth/token', {
+      client_id:"w51mJIxOTqy9lM9WJiDvHWWV2AbfIixW",client_secret:"oDWGPPFMRi06X_MIQavKVXfJFEhWchbMbuKuzMtkkA9qY9V0tepDjMbnR_abCfgv",audience:"https://jnpj-secure-cloud-storage.us.auth0.com/api/v2/",grant_type:"client_credentials",
+    }, {
+      headers: {
+        'Content-Type': 'application/json',
+    }
+  });
+
+  const managmentApiToken = managmentApiTokenRequest.data.access_token;
+
+  const userResponse = await fetch(`https://jnpj-secure-cloud-storage.us.auth0.com/api/v2/users/${userId}`, {
+    method: 'PATCH',
+    headers: {
+      'Authorization': `Bearer ${managmentApiToken}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      password: `${newPassword}`
+    })
+  });
+    res.status(200).send('Password has been changed');
+  } catch (error) {
+    myConsole.log('Error changing password:', error);
+    res.status
+  }
+});
+  
+app.post('/change-email', async (req, res) => {
+  // Change the user's password on Auth0
+  const userId = req.body.userId;
+  const newEmail = req.body.newEmail;
+  try {
+    const managmentApiTokenRequest = await axios.post('https://jnpj-secure-cloud-storage.us.auth0.com/oauth/token', {
+      client_id:"w51mJIxOTqy9lM9WJiDvHWWV2AbfIixW",client_secret:"oDWGPPFMRi06X_MIQavKVXfJFEhWchbMbuKuzMtkkA9qY9V0tepDjMbnR_abCfgv",audience:"https://jnpj-secure-cloud-storage.us.auth0.com/api/v2/",grant_type:"client_credentials",
+    }, {
+      headers: {
+        'Content-Type': 'application/json',
+    }
+  });
+
+  const managmentApiToken = managmentApiTokenRequest.data.access_token;
+
+  const userResponse = await fetch(`https://jnpj-secure-cloud-storage.us.auth0.com/api/v2/users/${userId}`, {
+    method: 'PATCH',
+    headers: {
+      'Authorization': `Bearer ${managmentApiToken}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      email: `${newEmail}`
+    })
+  });
+    res.status(200).send('Password has been changed');
+  } catch (error) {
+    myConsole.log('Error changing password:', error);
+    res.status
+  }
+});
+  
+
 
 
 
