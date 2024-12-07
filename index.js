@@ -239,7 +239,7 @@ app.post('/create-drive', async (req, res) => {
       return;
     }
 
-    //TODO: ADD DATASET TO USERS METADATA
+    
     const managmentApiTokenRequest = await axios.post('https://jnpj-secure-cloud-storage.us.auth0.com/oauth/token', {
         client_id:"w51mJIxOTqy9lM9WJiDvHWWV2AbfIixW",client_secret:"oDWGPPFMRi06X_MIQavKVXfJFEhWchbMbuKuzMtkkA9qY9V0tepDjMbnR_abCfgv",audience:"https://jnpj-secure-cloud-storage.us.auth0.com/api/v2/",grant_type:"client_credentials",
       }, {
@@ -475,6 +475,91 @@ app.post('/change-email', async (req, res) => {
   } catch (error) {
     myConsole.log('Error changing password:', error);
     res.status
+  }
+});
+
+app.post('/get-total-usage', async (req, res) => {
+  var drive = req.body.drive;
+  // Make the var drive uri safe
+  drive = encodeURIComponent(drive);
+  try {
+    const data = await axios.get(`${envVariables.truenasApi}/pool/dataset/id/${drive}`, {
+      headers: {
+        'Authorization': `Bearer ${envVariables.truenasApiKey}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    // Get "used": { "parsed": 12312} from the response json
+    const used = data.data.used.parsed;
+    res.status(200).send({ used });
+  } catch (error) {
+    myConsole.log('Error getting user info:', error);
+  }
+});
+
+app.post('/delete-drive', async (req, res) => {
+  const drive = req.body.drive;
+  const dataSet = req.body.dataset;
+  const authUserId = req.body.authUserId;
+  const datasetId = encodeURIComponent(`${drive}`);
+  try {
+    const response = await axios.delete(`${envVariables.truenasApi}/pool/dataset/id/${datasetId}`, {
+      headers: {
+        'Authorization': `Bearer ${envVariables.truenasApiKey}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    // Remove the dataset from the user's metadata
+    const managmentApiTokenRequest = await axios.post('https://jnpj-secure-cloud-storage.us.auth0.com/oauth/token', {
+      client_id:"w51mJIxOTqy9lM9WJiDvHWWV2AbfIixW",client_secret:"oDWGPPFMRi06X_MIQavKVXfJFEhWchbMbuKuzMtkkA9qY9V0tepDjMbnR_abCfgv",audience:"https://jnpj-secure-cloud-storage.us.auth0.com/api/v2/",grant_type:"client_credentials",
+    }, {
+        headers: {
+          'Content-Type': 'application/json',
+      }
+    });
+
+    const managmentApiToken = managmentApiTokenRequest.data.access_token;
+
+    const userResponse = await fetch(`https://jnpj-secure-cloud-storage.us.auth0.com/api/v2/users/${authUserId}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${managmentApiToken}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    const userMetadata = await userResponse.json();
+    const currentDatasets = userMetadata.user_metadata.datasets || [];
+    // Remove the dataset from the user's metadata
+    const newDatasets = [];
+    myConsole.log('Current deletion:', dataSet);
+    for (let i = 0; i < currentDatasets.length; i++) {
+      if (currentDatasets[i] !== dataSet) {
+        newDatasets.push(currentDatasets[i]);
+      }
+      myConsole.log('Current datasets:', currentDatasets[i]);
+    }
+
+    myConsole.log('New datasets:', newDatasets);
+
+    const userResponse2 = await fetch(`https://jnpj-secure-cloud-storage.us.auth0.com/api/v2/users/${authUserId}`, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `Bearer ${managmentApiToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        user_metadata: {
+          datasets: newDatasets
+        }
+      })
+    });
+
+    res.status(200).send('Drive has been deleted');
+  } catch (error) {
+    myConsole.log('Error deleting drive:', error);
   }
 });
   
