@@ -284,9 +284,6 @@ app.post('/create-drive', async (req, res) => {
 });
 
 
-
-
-//TODO: Fix this endpoint, not sure why its not working anymore
 app.post('/set-user-size', async (req, res) => {
   const uid = req.body.uid;
   const authUserId = req.body.authUserId;
@@ -563,7 +560,38 @@ app.post('/delete-drive', async (req, res) => {
   }
 });
   
+app.post('/mfa', async (req, res) => {
+  const authUserId = req.body.uid;
+  const bool = req.body.mfa;
+  try {
+    const managmentApiTokenRequest = await axios.post('https://jnpj-secure-cloud-storage.us.auth0.com/oauth/token', {
+      client_id:"w51mJIxOTqy9lM9WJiDvHWWV2AbfIixW",client_secret:"oDWGPPFMRi06X_MIQavKVXfJFEhWchbMbuKuzMtkkA9qY9V0tepDjMbnR_abCfgv",audience:"https://jnpj-secure-cloud-storage.us.auth0.com/api/v2/",grant_type:"client_credentials",
+    }, {
+      headers: {
+        'Content-Type': 'application/json',
+    }
+  });
 
+  const managmentApiToken = managmentApiTokenRequest.data.access_token;
+
+  const userResponse = await fetch(`https://jnpj-secure-cloud-storage.us.auth0.com/api/v2/users/${authUserId}`, {
+    method: 'PATCH',
+    headers: {
+      'Authorization': `Bearer ${managmentApiToken}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      user_metadata: {
+        use_mfa: bool
+      }
+    })
+  });
+    res.status(200).send('MFA has been changed');
+  } catch (error) {
+    myConsole.log('Error changing password:', error);
+    res.status
+  }
+});
 
 
 
